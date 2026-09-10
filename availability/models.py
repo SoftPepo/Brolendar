@@ -1,4 +1,4 @@
-from django.db.models import Model, DateTimeField, CharField, ForeignKey, Index
+from django.db.models import Model, DateTimeField, CharField, ForeignKey, Index, CheckConstraint, Q, F
 from django.db.models.deletion import CASCADE, SET_NULL
 from django.db.models.enums import TextChoices
 from django.db.models.fields.composite import CompositePrimaryKey
@@ -21,6 +21,14 @@ class BusyBlock(Model):
     note = CharField(max_length=100, blank=True, null=True)
     created_at = DateTimeField(auto_now_add=True)
 
+    class Meta:
+        constraints = [
+            CheckConstraint(
+                condition=Q(ends_at__gt=F("starts_at")),
+                name="busyblock_ends_after_starts",
+            )
+        ]
+
 class Event(Model):
 
     class EventStatus(TextChoices):
@@ -36,6 +44,14 @@ class Event(Model):
     color = CharField(max_length=20, choices=CalendarColor, default=CalendarColor.BLUE)
     note = CharField(max_length=100, blank=True, null=True)
     created_at = DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            CheckConstraint(
+                condition=Q(ends_at__gt=F("starts_at")),
+                name="event_ends_after_starts",
+            )
+        ]
 
 class EventResponse(Model):
 
