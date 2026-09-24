@@ -1,15 +1,14 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from django.contrib.auth import password_validation
-from django.core.exceptions import ValidationError as DjangoValidationError
+
 
 class UserRegistrationSerializer(ModelSerializer):
-
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'username', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ["id", "email", "username", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
 
     def validate_password(self, password):
         try:

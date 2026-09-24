@@ -1,10 +1,10 @@
-from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models.fields import EmailField, CharField
+from django.db.models.fields import CharField, EmailField
+
 
 class UserManager(BaseUserManager):
-
     def _create_user_object(self, username, email, password, **extra_fields):
         if not (username and email and password):
             raise ValueError("Missing required values")
@@ -35,8 +35,8 @@ class UserManager(BaseUserManager):
 
         return self._create_user(username, email, password, **extra_fields)
 
-class User(AbstractUser):
 
+class User(AbstractUser):
     email = EmailField(unique=True, max_length=254)
     username = CharField(unique=False, max_length=30, validators=[UnicodeUsernameValidator()])
 

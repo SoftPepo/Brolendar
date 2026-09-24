@@ -1,8 +1,18 @@
-from django.db.models import Model, DateTimeField, CharField, ForeignKey, Index, CheckConstraint, Q, F
+from django.conf import settings
+from django.db.models import (
+    CharField,
+    CheckConstraint,
+    DateTimeField,
+    F,
+    ForeignKey,
+    Index,
+    Model,
+    Q,
+)
 from django.db.models.deletion import CASCADE, SET_NULL
 from django.db.models.enums import TextChoices
 from django.db.models.fields.composite import CompositePrimaryKey
-from django.conf import settings
+
 
 class CalendarColor(TextChoices):
     RED = "red", "Red"
@@ -11,7 +21,6 @@ class CalendarColor(TextChoices):
 
 
 class BusyBlock(Model):
-
     group = ForeignKey("groups.Group", on_delete=CASCADE, related_name="blocks")
     user = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name="blocks")
     name = CharField(max_length=30)
@@ -29,8 +38,8 @@ class BusyBlock(Model):
             )
         ]
 
-class Event(Model):
 
+class Event(Model):
     class EventStatus(TextChoices):
         ACTIVE = "active", "Active"
         CANCELED = "canceled", "Canceled"
@@ -53,8 +62,8 @@ class Event(Model):
             )
         ]
 
-class EventResponse(Model):
 
+class EventResponse(Model):
     class ResponseStatus(TextChoices):
         YES = "yes", "Yes"
         MAYBE = "maybe", "Maybe"
@@ -67,6 +76,4 @@ class EventResponse(Model):
     created_at = DateTimeField(auto_now_add=True)
 
     class Meta:
-        indexes = [
-            Index(fields=["user"])
-        ]
+        indexes = [Index(fields=["user"])]
