@@ -7,4 +7,3 @@ class RegisterView(CreateAPIView):
 
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
-
