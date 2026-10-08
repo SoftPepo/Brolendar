@@ -20,3 +20,9 @@ class UserRegistrationSerializer(ModelSerializer):
     def create(self, validated_data):
         model = get_user_model().objects
         return model.create_user(**validated_data)
+
+
+class UserGetMeSerializer(ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ["id", "email", "username"]
