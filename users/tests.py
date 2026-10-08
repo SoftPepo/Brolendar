@@ -144,3 +144,63 @@ class UserLoginTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
         self.assertEqual(self.user.id, int(AccessToken(response.data["access"])["user_id"]))
+
+
+class UserGetSelfTest(APITestCase):
+    def setUp(self):
+        self.get_url = reverse("user-get-me")
+        self.data = {"email": "testuser@mail.com", "username": "testuser1234", "password": "R286rn5fAWsf"}
+        self.user = get_user_model().objects.create_user(
+            email=self.data["email"], username=self.data["username"], password=self.data["password"]
+        )
+
+    def test_user_get_self_proper(self):
+        token = AccessToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.get(self.get_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.user.id)
+        self.assertEqual(response.data["email"], self.user.email)
+        self.assertEqual(response.data["username"], self.user.username)
+
+    def test_user_get_self_no_token(self):
+        response = self.client.get(self.get_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["detail"].code, "not_authenticated")
+        self.assertNotIn("id", response.data)
+        self.assertNotIn("email", response.data)
+        self.assertNotIn("username", response.data)
+
+    def test_user_get_self_invalid_token(self):
+        malicious_user = get_user_model().objects.create_user(
+            email="muser@mail.com", username="muser", password="R286rn5fAWsf1"
+        )
+        forged_token = forge_token(str(AccessToken.for_user(self.user)), malicious_user.id)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {forged_token}")
+        response = self.client.get(self.get_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["detail"].code, "token_not_valid")
+        self.assertNotIn("id", response.data)
+        self.assertNotIn("email", response.data)
+        self.assertNotIn("username", response.data)
+
+    def test_user_get_self_user_nonexistent(self):
+        token = AccessToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.user.delete()
+        response = self.client.get(self.get_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["code"], "user_not_found")
+        self.assertNotIn("id", response.data)
+        self.assertNotIn("email", response.data)
+        self.assertNotIn("username", response.data)
+
+    def test_user_get_self_use_refresh_token(self):
+        token = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.get(self.get_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["messages"][0]["message"], "Token has wrong type")
+        self.assertNotIn("id", response.data)
+        self.assertNotIn("email", response.data)
+        self.assertNotIn("username", response.data)
