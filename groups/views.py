@@ -1,12 +1,15 @@
 from django.db import transaction
-from rest_framework.generics import CreateAPIView
+from rest_framework.viewsets import ModelViewSet
 
-from groups.models import GroupMember
+from groups.models import GroupMember, Group
 from groups.serializers import GroupSerializer
 
 
-class GroupCreateView(CreateAPIView):
+class GroupViewSet(ModelViewSet):
     serializer_class = GroupSerializer
+
+    def get_queryset(self):
+        return Group.objects.filter(groupmember__user=self.request.user)
 
     @transaction.atomic
     def perform_create(self, serializer):

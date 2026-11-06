@@ -9,7 +9,7 @@ from groups.models import Group, GroupMember
 
 class GroupCreationTest(APITestCase):
     def setUp(self):
-        self.create_url = reverse("group-create")
+        self.create_url = reverse("group-list")
         self.data = {"email": "testuser@mail.com", "username": "testuser1234", "password": "R286rn5fAWsf"}
         self.user = get_user_model().objects.create_user(
             email=self.data["email"], username=self.data["username"], password=self.data["password"]
